@@ -1,0 +1,253 @@
+'''
+Tic Tac Toe game written in python.
+
+Using tkinter GUI and OOP
+
+Created by Jack Ackermann
+'''
+
+from tkinter import Tk, ttk, Frame, FALSE, Canvas, Label, messagebox, \
+    StringVar, Button
+
+
+class TicTacToe(Frame):
+    ''' Main Class '''
+    def centre_window(self):
+        ''' Create Tkinter Window and display to centre of screen '''
+        w = 345
+        h = 370
+        sw = self.root.winfo_screenwidth()
+        sh = self.root.winfo_screenheight()
+        x = (sw - w)/2
+        y = (sh - h)/2
+        self.root.geometry('%dx%d+%d+%d' % (w, h, x, y))
+
+    def __init__(self, parent, *args, **kwargs):
+        ''' Initialize widgets and variables '''
+        Frame.__init__(self, parent, *args, **kwargs)
+        self.root = parent
+        self.root.title('TicTacToe  - Created in Python')
+        self.centre_window()
+        self.grid(column=0, row=0, sticky='nsew',  padx=0,  pady=0)
+        self.current_player = 1
+        self.play_count = 0
+        self.score_player1 = 0
+        self.score_player2 = 0
+        # Save selected coordinates chosen by players
+        self.a1, self.a2, self.a3 = [], [], []
+        self.b1, self.b2, self.b3 = [], [], []
+        self.c1, self.c2, self.c3 = [], [], []
+        # Load the screen widgets onto canvas
+        self.load_widgets()
+
+    def load_widgets(self):
+        ''' All widgets go under here '''
+        self.canvas = Canvas(self, width=340, height=340, background='cyan2')
+        self.canvas.grid(column=0, row=0)
+        # Create grid
+        self.create_grid()
+        # Create player turn status bar at bottom of screen
+        self.player_turn = Label(self, text='Player_1 is ready', font='bold')
+        self.player_turn.grid(row=1, column=0, sticky="Sw")
+        # Create buton to exit app
+        self.exit_button = Button(self, text=' Exit ', command=self.on_exit)
+        self.exit_button.config(foreground='red')
+        self.exit_button.grid(row=1, column=0, sticky="E")
+        # Add player score to screen
+        self.p1 = StringVar()
+        self.p1.set('Player1: {0}'.format(self.score_player1))
+        self.score1 = Label(self, textvariable=self.p1, background='cyan2')
+        self.score1.grid(row=0, column=0, sticky="sw")
+        self.p2 = StringVar()
+        self.p2.set('Player2: {0}'.format(self.score_player2))
+        self.score2 = Label(self, textvariable=self.p2, background='cyan2')
+        self.score2.grid(row=0, column=0, sticky="se")
+
+    def clicked(self, event, tag):
+        '''
+        Unbind selected onclick event, prevents player from selecting
+        the same block.
+        Mark selected Square of player, check if player has won.
+        Change player status, to next player and update play_count
+        '''
+        self.canvas.tag_unbind(tag, "<Button-1>")
+        if self.current_player == 1:
+            self.player_one_turn(tag.upper())
+            self.play_count += 1
+            self.check_win()
+            self.current_player = 2
+            self.player_turn.config(text="Player_2 is ready", font='bold')
+        elif self.current_player == 2:
+            self.player_two_turn(tag.upper())
+            self.play_count += 1
+            self.check_win()
+            self.current_player = 1
+            self.player_turn.config(text="Player_1 is ready", font='bold')
+        if self.play_count == 9:
+            messagebox.showinfo("Game Over", "Nobody wins, it is a draw")
+            self.reset_board()
+
+    def create_grid(self):
+        '''
+        Setup TicTacToe grid
+        x=10, y=109, x_left=327, y_bottom=109
+        '''
+        tag1, tag2, tag3 = 'a1', 'a2', 'a3'
+        tag4, tag5, tag6 = 'b1', 'b2', 'b3'
+        tag7, tag8, tag9 = 'c1', 'c2', 'c3'
+        grid = [[10, 109, 327, 109],
+                [10, 220, 327, 220],
+                [115, 10, 115, 327],
+                [225, 10, 225, 327]]
+        tag_list = [tag1, tag2, tag3, tag4, tag5, tag6, tag7, tag8, tag9]
+        coord_list = [[10, 10, 110, 105],
+                      [118, 10, 220, 105],
+                      [230, 10, 325, 105],
+                      [10, 115, 110, 215],
+                      [118, 115, 220, 215],
+                      [230, 115, 325, 215],
+                      [10, 225, 110, 325],
+                      [118, 225, 220, 325],
+                      [230, 225, 325, 325]]
+
+        for g in grid:  # Setup grid
+            self.canvas.create_line(g, fill="black", width='4')
+
+        for l, t in zip(coord_list, tag_list):  # setup and bind squares
+            self.canvas.create_rectangle(l, fill="cyan2", width='0', tags=t)
+            self.canvas.tag_bind(t, "<Button-1>", lambda event,
+                                 tag=t: self.clicked(event, tag))
+
+    def player_one_turn(self, tag):
+        '''
+        When its players one turn, draw a big X in chosen block
+        '''
+        coords1 = {'A1': [30, 30, 100, 100],
+                   'A2': [140, 30, 210, 100],
+                   'A3': [250, 30, 320, 100],
+                   'B1': [30, 130, 105, 205],
+                   'B2': [140, 130, 215, 205],
+                   'B3': [250, 130, 325, 205],
+                   'C1': [30, 235, 105, 310],
+                   'C2': [140, 235, 215, 310],
+                   'C3': [250, 235, 325, 310]}
+        coords2 = {'A1': [100, 30, 30, 100],
+                   'A2': [210, 30, 140, 100],
+                   'A3': [320, 30, 250, 100],
+                   'B1': [105, 130, 30, 205],
+                   'B2': [215, 130, 140, 205],
+                   'B3': [325, 130, 250, 205],
+                   'C1': [105, 235, 30, 310],
+                   'C2': [215, 235, 140, 310],
+                   'C3': [325, 235, 250, 310]}
+
+        self.canvas.create_line(coords1[tag], fill="black", width='10')
+        self.canvas.create_line(coords2[tag], fill="black", width='10')
+
+        if (len(eval("self.{0}".format(tag.lower())))) >= 1:
+            messagebox.showinfo("Invalid Choice", "That box is being used.")
+        else:
+            tmp = "self.{0}.append('X')".format(tag.lower())
+            eval(tmp)
+
+    def player_two_turn(self, tag):
+        '''
+        When its player two's turn, draw a red circle in chosen block
+        '''
+        coords = {'A1': [25, 25, 100, 100],
+                  'A2': [135, 25, 210, 100],
+                  'A3': [245, 25, 320, 100],
+                  'B1': [25, 200, 100, 125],
+                  'B2': [135, 200, 210, 125],
+                  'B3': [245, 200, 320, 125],
+                  'C1': [25, 235, 100, 315],
+                  'C2': [135, 235, 210, 315],
+                  'C3': [245, 235, 320, 315]}
+
+        self.canvas.create_oval(coords[tag], fill="Red", outline="red")
+
+        if (len(eval("self.{0}".format(tag.lower())))) >= 1:
+            messagebox.showinfo("Invalid Choice", "That box is being used.")
+        else:
+            tmp = "self.{0}.append('O')".format(tag.lower())
+            eval(tmp)
+
+    def win_line(self, combo):
+        '''
+        Draw a thick blue line through the winning combonation squares
+        '''
+        line = {'combo1': [20, 60, 320, 60],
+                'combo2': [20, 165, 320, 165],
+                'combo3': [20, 280, 320, 280],
+                'combo4': [60, 20, 60, 325],
+                'combo5': [167, 20, 167, 325],
+                'combo6': [275, 20, 275, 325],
+                'combo7': [25, 25, 310, 310],
+                'combo8': [310, 25, 25, 310]}
+        self.canvas.create_line(line[combo], fill="blue", width='10')
+
+    def check_win(self):
+        '''
+        Check to see if a player has won.
+        If a player has won, adjust the score and reset the board.
+        create strings containing all possible winning combonations
+        '''
+        combo = {'combo1': self.a1 + self.a2 + self.a3,
+                 'combo2': self.b1 + self.b2 + self.b3,
+                 'combo3': self.c1 + self.c2 + self.c3,
+                 'combo4': self.a1 + self.b1 + self.c1,
+                 'combo5': self.a2 + self.b2 + self.c2,
+                 'combo6': self.a3 + self.b3 + self.c3,
+                 'combo7': self.a1 + self.b2 + self.c3,
+                 'combo8': self.a3 + self.b2 + self.c1}
+
+        for keys in combo:
+            tmp_str = ''.join(combo[keys])
+            if tmp_str == 'XXX':
+                self.score_player1 += 1
+                self.p1.set('Player1: {0}'.format(self.score_player1))
+                self.win_line(keys)
+                messagebox.showinfo("Winner", "Player 1 wins this round!")
+                self.reset_board()
+            elif tmp_str == 'OOO':
+                self.score_player2 += 1
+                self.p2.set('Player2: {0}'.format(self.score_player2))
+                self.win_line(keys)
+                messagebox.showinfo("Winner", "Player 2 wins this round!")
+                self.reset_board()
+
+    def reset_board(self):
+        '''
+        Clears the board after a win or a draw
+        '''
+        self.canvas.delete("all")
+        self.play_count = 0
+        self.a1.clear()
+        self.a2.clear()
+        self.a3.clear()
+        self.b1.clear()
+        self.b2.clear()
+        self.b3.clear()
+        self.c1.clear()
+        self.c2.clear()
+        self.c3.clear()
+        self.create_grid()
+
+    # Exit the program. Linked to the Exit Button
+    def on_exit(self):
+        '''
+        Exits the program. Button not implemented
+        '''
+        self.root.destroy()
+
+
+def main():
+    ''' Main Function '''
+    root = Tk()
+    root.resizable(width=FALSE, height=FALSE)
+    # root.configure(background="black")
+    TicTacToe(root)
+    root.mainloop()
+
+if __name__ == '__main__':
+    main()
