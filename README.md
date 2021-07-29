@@ -13,4 +13,4 @@ Three sample scripts showing you different ways to make the Tic Tac Toe game.
 > **Note:**
 
 > - I tried to keep to pep8 guidlines.
-> - The OOP code I wrote, might not be the best way to do things.
+
